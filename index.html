@@ -164,7 +164,8 @@
 "use strict";
 const $=id=>document.getElementById(id);
 
-const AD_TOP='', AD_HOME='';   // 忍者AdMaxのユニットsrcを入れると表示
+const AD_TOP='https://adm.shinobi.jp/s/f4fb732a05924130c6a01214e9dd6873',
+      AD_HOME='https://adm.shinobi.jp/s/c689cb6fa65c43d674535e939663b702';   // 小=上部 / 大=ホーム
 function injectAd(slotId,src,h){
   const slot=$(slotId);if(!slot||!src)return;
   try{const ifr=document.createElement('iframe');ifr.setAttribute('frameborder','0');ifr.setAttribute('scrolling','no');
