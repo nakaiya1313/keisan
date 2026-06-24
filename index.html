@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>けいさんタッチ</title>
+<style>
+  :root{
+    --bg1:#8fe3f2;--bg2:#c6f6c9;--card:#fffdf6;--accent:#ff8a3d;--accent2:#e8650e;
+    --ink:#43372a;--ok:#3ec46d;--ng:#ff6b6b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;}
+  html,body{height:100%;}
+  body{font-family:"Hiragino Maru Gothic ProN","M PLUS Rounded 1c","Yu Gothic",sans-serif;
+    background:linear-gradient(165deg,var(--bg1),var(--bg2));color:var(--ink);min-height:100%;
+    padding:10px 12px 0;overflow-x:hidden;user-select:none;-webkit-user-select:none;
+    display:flex;flex-direction:column;align-items:center;}
+  button{font-family:inherit;cursor:pointer;touch-action:manipulation;}
+  h1{margin:4px 0 4px;font-size:clamp(26px,8vw,40px);letter-spacing:.04em;color:#fff;
+    text-shadow:0 3px 0 var(--accent2),0 6px 8px rgba(0,0,0,.16);text-align:center;}
+  h1 .m{font-size:.9em;}
+  .hide{display:none!important;}
+
+  #home{width:100%;max-width:460px;display:flex;flex-direction:column;align-items:center;gap:11px;}
+  .lead{font-size:18px;font-weight:900;color:#fff;text-shadow:0 2px 0 #00000026;margin-top:2px;}
+  .label{font-size:13px;font-weight:900;color:#fff;text-shadow:0 1px 0 #0003;margin:0 0 -6px;}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:#ffffffd0;border-radius:20px;padding:6px;box-shadow:0 4px 0 #00000014;}
+  .seg button{border:none;background:transparent;border-radius:14px;padding:10px 15px;font-size:16px;font-weight:900;color:#8a7d66;}
+  .seg button.on{background:var(--accent);color:#fff;box-shadow:0 3px 0 var(--accent2);}
+  .seg button:disabled{opacity:.35;}
+  .bigbtn{width:100%;max-width:340px;border:none;border-radius:22px;padding:18px;font-size:24px;font-weight:900;
+    color:#fff;background:linear-gradient(180deg,#ffb14d,#ff8a3d);box-shadow:0 7px 0 var(--accent2);}
+  .bigbtn:active{transform:translateY(4px);box-shadow:0 3px 0 var(--accent2);}
+  #ad{width:100%;max-width:340px;min-height:250px;background:#ffffffcc;border:3px dashed #fff;border-radius:20px;display:flex;align-items:center;justify-content:center;color:#9bbf7a;font-weight:800;font-size:14px;box-shadow:0 4px 0 #00000012;margin-top:4px;}
+  #adTop{width:100%;max-width:420px;min-height:54px;background:#ffffffcc;border:2px dashed #fff;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#9bbf7a;font-weight:800;font-size:13px;box-shadow:0 3px 0 #00000010;margin-bottom:6px;}
+
+  #gamebar{width:100%;max-width:460px;display:flex;flex-direction:column;gap:8px;align-items:center;}
+  .row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;align-items:center;}
+  .home-btn,.chip{border:none;background:#ffffffd0;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:900;color:var(--ink);box-shadow:0 2px 0 #0000001c;}
+  .chip.on{background:var(--accent);color:#fff;box-shadow:0 3px 0 var(--accent2);}
+  .streak{font-size:18px;min-height:26px;color:#fff;text-shadow:0 2px 0 #0003;font-weight:900;}
+
+  .qcard{background:#fff;border-radius:26px;padding:16px 26px;margin:4px 0;box-shadow:0 6px 0 #00000014;
+    font-size:clamp(38px,12vw,62px);font-weight:900;letter-spacing:.03em;display:flex;align-items:center;gap:12px;animation:pop .25s;}
+  @keyframes pop{from{transform:scale(.9);}to{transform:scale(1);}}
+  .spk{border:none;background:#ffd23d;border-radius:50%;width:42px;height:42px;font-size:20px;box-shadow:0 3px 0 #d9a400;}
+
+  #tiles{display:grid;grid-template-columns:1fr 1fr;gap:13px;width:min(92vw,360px);margin:4px 0;}
+  .tile{border:none;border-radius:22px;padding:24px 8px;font-size:38px;font-weight:900;color:#fff;box-shadow:0 6px 0 #00000022;transition:transform .05s;}
+  .tile:active{transform:translateY(4px);}
+  .tile.right{background:var(--ok)!important;box-shadow:0 6px 0 #259c4f!important;animation:bounce .4s;}
+  .tile.wrong{background:var(--ng)!important;box-shadow:0 6px 0 #c23b3b!important;opacity:.8;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}30%{transform:translateY(-10px);}60%{transform:translateY(-4px);}}
+
+  #padWrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:4px 0;}
+  #disp{min-width:220px;background:#fff;border-radius:18px;padding:8px 18px;font-size:44px;font-weight:900;text-align:center;box-shadow:0 5px 0 #00000014;min-height:62px;color:var(--accent2);}
+  #pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(86vw,320px);}
+  .key{border:none;border-radius:18px;padding:18px 0;font-size:28px;font-weight:900;background:#fff;color:var(--ink);box-shadow:0 5px 0 #0000001c;}
+  .key:active{transform:translateY(4px);box-shadow:0 2px 0 #0000001c;}
+  .key.del{background:#ffd9a8;}
+  .key.ok{background:var(--ok);color:#fff;box-shadow:0 5px 0 #259c4f;}
+
+  .controls{display:flex;gap:12px;margin:6px 0;}
+  .cbtn{border:none;border-radius:18px;padding:13px 22px;font-size:18px;font-weight:900;color:#fff;box-shadow:0 5px 0 #0006;}
+  .cbtn:active{transform:translateY(3px);}
+  .cbtn.ans{background:#7c5cff;box-shadow:0 5px 0 #5a3fd6;}
+  .cbtn.next{background:#34a0e0;box-shadow:0 5px 0 #1f79b5;}
+
+  /* 九九おぼえる */
+  #kukuWrap{display:flex;flex-direction:column;align-items:center;gap:14px;margin:8px 0;}
+  #kukuCard{background:#fff;border-radius:28px;padding:26px 30px;box-shadow:0 7px 0 #0000001a;text-align:center;animation:pop .25s;}
+  #kukuFact{font-size:clamp(40px,13vw,66px);font-weight:900;color:var(--accent2);}
+  #kukuYomi{font-size:20px;font-weight:900;color:#8a7d66;margin-top:6px;}
+  .kbtn{border:none;border-radius:18px;padding:16px 26px;font-size:20px;font-weight:900;color:#fff;background:#34a0e0;box-shadow:0 5px 0 #1f79b5;}
+  .kbtn:active{transform:translateY(3px);}
+
+  .feedback{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:20;}
+  .mark{font-size:min(46vw,220px);font-weight:900;opacity:0;transform:scale(.4);transition:opacity .15s,transform .25s cubic-bezier(.2,1.4,.4,1);}
+  .mark.show{opacity:.92;transform:scale(1);}
+  .mark.ok{color:var(--ok);}.mark.ng{color:var(--ng);}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#fff;padding:10px 22px;border-radius:999px;font-weight:900;font-size:18px;box-shadow:0 4px 16px #0003;opacity:0;transition:opacity .2s;z-index:25;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .conf{position:fixed;top:-30px;font-size:26px;z-index:15;pointer-events:none;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.9;}}
+  @media (prefers-reduced-motion:reduce){.mark{transition:opacity .1s;}.conf{display:none;}.qcard,#kukuCard{animation:none;}}
+</style>
+</head>
+<body>
+  <h1>🧮 けいさん<span class="m">タッチ</span></h1>
+  <div id="adTop" class="hide">こうこく（じょうぶ・injectAd）</div>
+
+  <div id="home">
+    <div class="lead">なに で あそぶ？</div>
+    <div class="label">しゅるい</div>
+    <div class="seg" id="opSeg">
+      <button data-op="add" class="on">たしざん</button>
+      <button data-op="sub">ひきざん</button>
+      <button data-op="mix">まぜまぜ</button>
+      <button data-op="mul">かけざん</button>
+      <button data-op="kuku">九九をおぼえる</button>
+    </div>
+    <div class="label" id="rangeLabel">かず の おおきさ</div>
+    <div class="seg" id="rangeSeg">
+      <button data-r="10" class="on">〜10</button>
+      <button data-r="20">〜20</button>
+      <button data-r="50">〜50</button>
+      <button data-r="100">〜100</button>
+    </div>
+    <div class="label hide" id="danLabel">なんのだん</div>
+    <div class="seg hide" id="danSeg">
+      <button data-d="1" class="on">1のだん</button>
+      <button data-d="2">2のだん</button>
+      <button data-d="3">3のだん</button>
+      <button data-d="4">4のだん</button>
+      <button data-d="5">5のだん</button>
+      <button data-d="6">6のだん</button>
+      <button data-d="7">7のだん</button>
+      <button data-d="8">8のだん</button>
+      <button data-d="9">9のだん</button>
+      <button data-d="0">バラバラ</button>
+    </div>
+    <div class="label" id="modeLabel">こたえかた</div>
+    <div class="seg" id="modeSeg">
+      <button data-m="touch" class="on">タッチ</button>
+      <button data-m="pad">にゅうりょく</button>
+    </div>
+    <button class="bigbtn" id="startBtn">▶ スタート</button>
+    <div id="ad">こうこく（ここに injectAd）</div>
+  </div>
+
+  <div id="gamebar" class="hide">
+    <div class="row">
+      <button class="home-btn" id="homeBtn">🏠 おうち</button>
+      <span id="modeTitle" style="font-weight:900;color:#fff;text-shadow:0 2px 0 #0003;"></span>
+    </div>
+    <div class="row">
+      <button class="chip" id="voiceChip">🔊 おんせい</button>
+      <button class="chip" id="soundChip">🔔 こうかおん</button>
+    </div>
+    <div class="streak" id="streak"></div>
+  </div>
+
+  <div id="qcard" class="qcard hide"><span id="quest">－</span><button class="spk" id="repeat">🔊</button></div>
+  <div id="tiles" class="hide"></div>
+  <div id="padWrap" class="hide"><div id="disp">?</div><div id="pad"></div></div>
+  <div id="controls" class="controls hide">
+    <button class="cbtn ans" id="ansBtn">？ こたえ</button>
+    <button class="cbtn next" id="skipBtn">つぎへ ▶</button>
+  </div>
+
+  <div id="kukuWrap" class="hide">
+    <div id="kukuCard"><div id="kukuFact">－</div><div id="kukuYomi"></div></div>
+    <div class="row">
+      <button class="kbtn" id="kPrev">◀ まえ</button>
+      <button class="spk" id="kSpeak" style="width:52px;height:52px;font-size:24px;">🔊</button>
+      <button class="kbtn" id="kNext">つぎ ▶</button>
+    </div>
+  </div>
+
+  <div class="feedback"><div class="mark" id="mark"></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+const AD_TOP='', AD_HOME='';   // 忍者AdMaxのユニットsrcを入れると表示
+function injectAd(slotId,src,h){
+  const slot=$(slotId);if(!slot||!src)return;
+  try{const ifr=document.createElement('iframe');ifr.setAttribute('frameborder','0');ifr.setAttribute('scrolling','no');
+    ifr.style.border='0';ifr.style.width='100%';ifr.style.height=h+'px';ifr.style.display='block';
+    slot.innerHTML='';slot.appendChild(ifr);const d=ifr.contentWindow.document;d.open();
+    d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;overflow:hidden;background:transparent;text-align:center;}</style></head><body><!-- admax --><script src="'+src+'"><\/script><!-- admax --></body></html>');d.close();
+  }catch(e){}}
+
+const TILECOLORS=['#ff7aa2','#ffb14d','#5ad1c9','#7c9cff','#b58cff','#73c84e'];
+const state={screen:'home',op:'add',range:10,dan:1,mode:'touch',voice:true,sound:true};
+let prob={a:0,b:0,op:'＋',ans:0}, streak=0, inp='', locked=false;
+let kuku=[], kIdx=0;
+const adDone={home:false,top:false};
+
+function rnd(n){return Math.floor(Math.random()*n);}
+
+/* ====== 出題 ====== */
+function genProblem(){
+  let op=state.op;
+  if(op==='mix')op=Math.random()<0.5?'add':'sub';
+  let a,b,sym,ans;
+  if(op==='mul'){const d=state.dan;a=d>=1?d:1+rnd(9);b=1+rnd(9);sym='×';ans=a*b;}
+  else if(op==='sub'){a=1+rnd(state.range);b=1+rnd(a);sym='−';ans=a-b;}        // 0をひかない
+  else{const R=state.range;a=1+rnd(R-1);b=1+rnd(R-a);sym='＋';ans=a+b;}          // 0をたさない
+  prob={a,b,op:sym,ans};
+}
+function questStr(){return `${prob.a} ${prob.op} ${prob.b} ＝ ?`;}
+function word(){return prob.op==='＋'?'たす':prob.op==='−'?'ひく':'かける';}
+function jaNum(n){ // 0〜200を かな読みに（英語読み防止）
+  if(n<=0)return 'ぜろ';
+  const o=['','いち','に','さん','よん','ご','ろく','なな','はち','きゅう'];
+  const t=['','じゅう','にじゅう','さんじゅう','よんじゅう','ごじゅう','ろくじゅう','ななじゅう','はちじゅう','きゅうじゅう'];
+  const h=Math.floor(n/100), tn=Math.floor((n%100)/10), on=n%10;
+  let s='';
+  if(h===1)s+='ひゃく'; else if(h===2)s+='にひゃく'; else if(h>=3)s+=o[h]+'ひゃく';
+  s+=t[tn]+o[on];
+  return s||'ぜろ';
+}
+function speakQuest(){return `${jaNum(prob.a)} ${word()} ${jaNum(prob.b)} は？`;}
+function speakAns(){return `${jaNum(prob.a)} ${word()} ${jaNum(prob.b)} は ${jaNum(prob.ans)}`;}
+function distractors(){
+  const set=new Set([prob.ans]),out=[];
+  const sp=[1,2,3,5,10,prob.ans>20?20:4];
+  const cand=[];sp.forEach(s=>{cand.push(prob.ans+s);cand.push(prob.ans-s);});
+  cand.sort(()=>Math.random()-0.5);
+  for(const c of cand){if(out.length>=3)break;if(c>=0&&!set.has(c)){set.add(c);out.push(c);}}
+  while(out.length<3){const c=Math.max(0,prob.ans+(rnd(13)-6));if(!set.has(c)){set.add(c);out.push(c);}}
+  return out;
+}
+
+function newProblem(){
+  locked=false;inp='';
+  genProblem();
+  $('quest').textContent=questStr();
+  $('qcard').style.animation='none';void $('qcard').offsetWidth;$('qcard').style.animation='';
+  if(state.mode==='touch')buildTiles();else updateDisp();
+  if(state.voice)speak(speakQuest());
+}
+function buildTiles(){
+  const opts=[prob.ans,...distractors()].sort(()=>Math.random()-0.5);
+  const box=$('tiles');box.innerHTML='';
+  opts.forEach((v,i)=>{const b=document.createElement('button');b.className='tile';b.textContent=v;
+    b.style.background=TILECOLORS[i%TILECOLORS.length];b.style.boxShadow='0 6px 0 #00000026';
+    b.dataset.v=v;b.onclick=()=>pick(v,b);box.appendChild(b);});
+}
+function updateDisp(){$('disp').textContent=inp===''?'?':inp;}
+
+/* ====== 判定 ====== */
+function pick(v,btn){
+  if(locked)return;ensureCtx();
+  if(v===prob.ans)correct(btn);
+  else{btn.classList.add('wrong');btn.disabled=true;showMark(false);beep(false);
+    if(state.voice)speak('ちがうよ');toast('もういちど！');streak=0;renderStreak();}
+}
+function submitPad(){
+  if(locked||inp==='')return;ensureCtx();
+  if(parseInt(inp,10)===prob.ans)correct(null);
+  else{showMark(false);beep(false);if(state.voice)speak('ちがうよ');toast('もういちど！');inp='';updateDisp();streak=0;renderStreak();}
+}
+function correct(btn){
+  locked=true;if(btn)btn.classList.add('right');
+  showMark(true);beep(true);streak++;renderStreak();confetti();
+  if(state.voice)speak('せいかい！ '+speakAns());toast('せいかい！ ⭐');
+  setTimeout(()=>{if(state.screen==='game'&&state.op!=='kuku')newProblem();},950);
+}
+function revealAnswer(){
+  if(locked)return;locked=true;streak=0;renderStreak();ensureCtx();
+  if(state.mode==='touch'){$('tiles').querySelectorAll('.tile').forEach(t=>{
+    if(+t.dataset.v===prob.ans)t.classList.add('right');t.disabled=true;});}
+  else{inp=String(prob.ans);updateDisp();}
+  if(state.voice)speak('こたえは '+jaNum(prob.ans));toast('こたえは '+prob.ans);
+  setTimeout(()=>{if(state.screen==='game'&&state.op!=='kuku')newProblem();},1600);
+}
+function skip(){if(state.screen!=='game')return;streak=0;renderStreak();newProblem();}
+$('ansBtn').onclick=revealAnswer;
+$('skipBtn').onclick=skip;
+
+/* ====== テンキー（電卓配置：左下=1） ====== */
+(function buildPad(){
+  const pad=$('pad');
+  const keys=['7','8','9','4','5','6','1','2','3','←','0','✓'];
+  keys.forEach(k=>{const b=document.createElement('button');b.textContent=k;
+    b.className='key'+(k==='←'?' del':k==='✓'?' ok':'');
+    b.onclick=()=>{ensureCtx();if(locked&&k!=='←'&&k!=='✓')return;
+      if(k==='←')inp=inp.slice(0,-1);else if(k==='✓')return submitPad();else if(inp.length<3)inp+=k;
+      updateDisp();};
+    pad.appendChild(b);});
+})();
+window.addEventListener('keydown',e=>{
+  if(state.screen!=='game'||state.op==='kuku'||state.mode!=='pad')return;
+  if(e.key>='0'&&e.key<='9'){if(!locked&&inp.length<3){inp+=e.key;updateDisp();}}
+  else if(e.key==='Backspace'){inp=inp.slice(0,-1);updateDisp();}
+  else if(e.key==='Enter'){submitPad();}
+});
+
+/* ====== 九九をおぼえる ====== */
+function buildKuku(){
+  kuku=[];const d=state.dan;
+  if(d>=1){for(let b=1;b<=9;b++)kuku.push({a:d,b,ans:d*b});}
+  else{for(let a=1;a<=9;a++)for(let b=1;b<=9;b++)kuku.push({a,b,ans:a*b});kuku.sort(()=>Math.random()-0.5);}
+  kIdx=0;showKuku();
+}
+function showKuku(){
+  const f=kuku[kIdx];
+  $('kukuFact').textContent=`${f.a} × ${f.b} = ${f.ans}`;
+  $('kukuYomi').textContent=`${f.a}かける${f.b}は${f.ans}`;
+  $('kukuCard').style.animation='none';void $('kukuCard').offsetWidth;$('kukuCard').style.animation='';
+  if(state.voice)speak(`${jaNum(f.a)}かける${jaNum(f.b)}は${jaNum(f.ans)}`);
+}
+$('kPrev').onclick=()=>{ensureCtx();kIdx=(kIdx-1+kuku.length)%kuku.length;showKuku();};
+$('kNext').onclick=()=>{ensureCtx();kIdx=(kIdx+1)%kuku.length;showKuku();};
+$('kSpeak').onclick=()=>{ensureCtx();const f=kuku[kIdx];speak(`${jaNum(f.a)}かける${jaNum(f.b)}は${jaNum(f.ans)}`);};
+
+/* ====== 画面 ====== */
+function show(el,on){el.classList.toggle('hide',!on);}
+function go(screen){
+  state.screen=screen;
+  const kk=state.op==='kuku';
+  show(document.querySelector('h1'),screen==='home');
+  show($('adTop'),screen!=='home');
+  show($('home'),screen==='home');
+  show($('gamebar'),screen==='game');
+  show($('qcard'),screen==='game'&&!kk);
+  show($('tiles'),screen==='game'&&!kk&&state.mode==='touch');
+  show($('padWrap'),screen==='game'&&!kk&&state.mode==='pad');
+  show($('controls'),screen==='game'&&!kk);
+  show($('kukuWrap'),screen==='game'&&kk);
+  show($('streak'),screen==='game'&&!kk);
+  const names={add:'たしざん',sub:'ひきざん',mix:'まぜまぜ',mul:'かけざん',kuku:'九九をおぼえる'};
+  $('modeTitle').textContent=names[state.op]+(kk?'':'（'+(state.mode==='touch'?'タッチ':'にゅうりょく')+'）');
+  if(screen==='home'&&!adDone.home){adDone.home=true;injectAd('ad',AD_HOME,250);}
+  if(screen!=='home'&&!adDone.top){adDone.top=true;injectAd('adTop',AD_TOP,54);}
+  if(screen==='game'){streak=0;renderStreak();if(kk)buildKuku();else newProblem();}
+}
+
+/* ====== トップの設定 ====== */
+function segPick(segId,attr,key,after){
+  $(segId).querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>{const raw=b.dataset[attr];state[key]=isNaN(+raw)?raw:+raw;
+      $(segId).querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');after&&after();};
+  });
+}
+segPick('opSeg','op','op',()=>{
+  const mul=state.op==='mul', kk=state.op==='kuku';
+  show($('rangeSeg'),!mul&&!kk);show($('rangeLabel'),!mul&&!kk);
+  show($('danSeg'),mul||kk);show($('danLabel'),mul||kk);
+  show($('modeSeg'),!kk);show($('modeLabel'),!kk);
+});
+segPick('rangeSeg','r','range');
+segPick('danSeg','d','dan');
+segPick('modeSeg','m','mode');
+
+function bindChip(id,key){$(id).onclick=()=>{state[key]=!state[key];$(id).classList.toggle('on',state[key]);};$(id).classList.toggle('on',state[key]);}
+bindChip('voiceChip','voice');bindChip('soundChip','sound');
+
+$('startBtn').onclick=()=>{ensureCtx();go('game');};
+$('homeBtn').onclick=()=>{if('speechSynthesis'in window)speechSynthesis.cancel();go('home');};
+$('repeat').onclick=()=>{ensureCtx();speak(speakQuest());};
+
+/* ====== 演出 ====== */
+function showMark(ok){const m=$('mark');m.textContent=ok?'○':'×';m.className='mark '+(ok?'ok':'ng')+' show';setTimeout(()=>m.classList.remove('show'),ok?700:520);}
+let toastTimer;
+function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1100);}
+function renderStreak(){$('streak').textContent=streak>0?('れんぞく '+streak+'もん ⭐'):'';}
+function confetti(){if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;const e=['⭐','🎉','✨','🌟','🎈'];
+  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='conf';d.textContent=e[i%e.length];
+    d.style.left=Math.random()*100+'vw';d.style.animation=`fall ${0.9+Math.random()*0.8}s ${Math.random()*0.3}s linear forwards`;
+    document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}}
+
+/* ====== 音 ====== */
+let actx=null;
+function ensureCtx(){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();}catch(e){}}
+function tone(f,start,dur,type,vol){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0.0001,start);g.gain.exponentialRampToValueAtTime(vol,start+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,start+dur);o.connect(g).connect(actx.destination);o.start(start);o.stop(start+dur+0.05);}
+function beep(ok){if(!state.sound)return;ensureCtx();if(!actx)return;const t=actx.currentTime;
+  if(ok){tone(784,t,0.16,'triangle',0.3);tone(1046,t+0.12,0.18,'triangle',0.3);tone(1318,t+0.24,0.4,'triangle',0.28);}
+  else{tone(180,t,0.16,'sawtooth',0.22);tone(140,t+0.17,0.3,'sawtooth',0.22);}}
+
+/* ====== 音声 ====== */
+let jaVoice=null;
+function loadVoices(){try{const v=speechSynthesis.getVoices();jaVoice=v.find(x=>/ja|Japan/i.test(x.lang))||jaVoice;}catch(e){}}
+if('speechSynthesis'in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+function speak(t){if(!state.voice||!('speechSynthesis'in window))return;
+  try{if(!jaVoice)loadVoices();speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';if(jaVoice)u.voice=jaVoice;u.rate=0.95;u.pitch=1.15;speechSynthesis.speak(u);}catch(e){}}
+
+go('home');
+</script>
+</body>
+</html>
